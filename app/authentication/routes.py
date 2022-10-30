@@ -8,8 +8,9 @@ from flask_login import login_user, logout_user, LoginManager, current_user, fre
 auth = Blueprint('auth', __name__, template_folder='auth_templates')
 
 @auth.route('/signup', methods = ['GET', 'POST'])
-def signup(email, password):
-
+def signup():
+    email = request.json['email']
+    password = request.json['password']
     try:
         if request.method == 'POST' and email is not None and password is not None:
             
@@ -18,24 +19,28 @@ def signup(email, password):
             db.session.add(user)
             db.session.commit()
 
+            response = f'You have successfully created a user account {email}'
             flash(f'You have successfully created a user account {email}', 'User-created')
-            return
+            return response
 
     except:
         raise Exception('Invalid form data: Please check your form')
     return
 
 @auth.route('/signin', methods=['GET', 'POST'])
-def signin(email='spongebob@example.com', password='Patrick1!'):
-
+def signin():
+    email = request.json['email']
+    password = request.json['password']
     try:
         if request.method == 'POST' and email is not None and password is not None:
 
             logged_user = User.query.filter(User.email == email).first()
             if logged_user and check_password_hash(logged_user.password, password):
                 login_user(logged_user)
+                response = logged_user.token
+                print(response)
                 flash('You have successfully loged in', 'auth-success')
-                return print('You did it!')
+                return response
             else:
                 flash('You do not have access to this content.', 'auth-failed')
                 return

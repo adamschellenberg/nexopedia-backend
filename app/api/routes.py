@@ -6,12 +6,11 @@ from models import db, User
 api = Blueprint('api', __name__, url_prefix='/api')
 
 @api.route('/avatar', methods = ['GET'])
-@token_required
-def get_avatar(current_user_token):
-    print(current_user_token.avatar)
+def get_avatar():
+    print(f'current user value is {User.avatar}')
     try:
         if request.method == 'GET':
-            avatar = current_user_token.avatar
+            avatar = User.avatar
             response = {
                 'avatar': avatar
             }

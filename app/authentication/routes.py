@@ -1,7 +1,7 @@
 from sqlalchemy import null
 from forms import UserLoginForm
 from models import User, db, check_password_hash
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 
 from flask_login import login_user, logout_user, LoginManager, current_user, fresh_login_required
 
@@ -54,7 +54,46 @@ def signin():
         raise Exception('Invalid Form Data: Please check your form')
     return response
 
-@auth.route('/logout')
-def logout():
-    logout_user()
-    return
+@auth.route('/avatar', methods = ['GET', 'POST'])
+def get_avatar():
+    token = request.json['token']
+    print(token)
+    if request.method == 'POST' and token is not None:
+        logged_user = User.query.filter(User.token == token).first()
+        if logged_user:
+            response = {
+                'avatar': logged_user.avatar
+            }
+            flash('You have fetched the avatar')
+            return jsonify(response)
+        else:
+            response = {
+                'message': 'Well this is awkward'
+            }
+            flash ('Something went wrong')
+            return jsonify(response)
+    return response
+
+@auth.route('/avatar/update', methods = ['POST', 'PUT'])
+def update_avatar():
+    avatar = request.json['avatar']
+    token = request.json['token']
+    print(f'passing in avatar: {avatar}')
+    try:
+        if request.method == 'POST' and avatar is not None:
+            logged_user = User.query.filter(User.token == token).first()
+            if logged_user:
+                logged_user.avatar = avatar
+                db.session.commit()
+                response = {
+                    'message': f'You have updated your avatar to {avatar}',
+                    'userAvatar': logged_user.avatar
+                }
+                return jsonify(response)
+        else:
+            response = {
+                'message': 'You did not update your avatar'
+            }
+            return jsonify(response)
+    except:
+        raise Exception ('uh oh! Something went wrong!')

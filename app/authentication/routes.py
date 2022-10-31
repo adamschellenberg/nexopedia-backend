@@ -11,6 +11,8 @@ auth = Blueprint('auth', __name__, template_folder='auth_templates')
 def signup():
     email = request.json['email']
     password = request.json['password']
+    print(f'email: {email}')
+    print(f'password: {password}')
     try:
         if request.method == 'POST' and email is not None and password is not None:
             
@@ -19,7 +21,10 @@ def signup():
             db.session.add(user)
             db.session.commit()
 
-            response = f'You have successfully created a user account {email}'
+            response = {
+                'text': f'You have successfully created a user account {email}',
+                'success': True,
+            }
             flash(f'You have successfully created a user account {email}', 'User-created')
             return response
 
@@ -37,7 +42,9 @@ def signin():
             logged_user = User.query.filter(User.email == email).first()
             if logged_user and check_password_hash(logged_user.password, password):
                 login_user(logged_user)
-                response = logged_user.token
+                response = {
+                    'token': logged_user.token
+                }
                 print(response)
                 flash('You have successfully loged in', 'auth-success')
                 return response
@@ -46,7 +53,7 @@ def signin():
                 return
     except:
         raise Exception('Invalid Form Data: Please check your form')
-    return
+    return response
 
 @auth.route('/logout')
 def logout():

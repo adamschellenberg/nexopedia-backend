@@ -45,8 +45,7 @@ def signin():
                 response = {
                     'token': logged_user.token
                 }
-                print(response)
-                flash('You have successfully loged in', 'auth-success')
+                flash('You have successfully logged in', 'auth-success')
                 return response
             else:
                 flash('You do not have access to this content.', 'auth-failed')
